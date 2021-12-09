@@ -28,7 +28,6 @@ const MemberSchema = Yup.object().shape({
 	ri_id: Yup.string().required('Required').min(6).max(11),
 	dob: Yup.date('Invalid date').required('Required'),
 	doi: Yup.date('Invalid date').required('Required'),
-	gov_id: Yup.string().required('Required'),
 	gov_id_number: Yup.string().required('Required'),
 	gov_id_doc: Yup.string().url('Enter a valid URL').required('Required'),
 	blood_group: Yup.string().required('Required'),
@@ -36,6 +35,11 @@ const MemberSchema = Yup.object().shape({
 	previous_positions: Yup.string().required('Required'),
 	current_positions: Yup.string().required('Required'),
 	photo: Yup.string().url('Enter a valid URL').required('Required'),
+	opt_insurance: Yup.string().required('Required'),
+	nominee_name: Yup.string().required('Required'),
+	nominee_rel: Yup.string().required('Required'),
+	nominee_dob: Yup.date('Invalid date').required('Required'),
+	nominee_id_doc: Yup.string().url('Enter a valid URL').required('Required'),
 });
 
 export { AddEdit };
@@ -69,7 +73,12 @@ function AddEdit(props) {
 		previous_positions: '',
 		current_positions: '',
 		photo: '',
-		gov_id_doc: ''
+		gov_id_doc: '',
+		opt_insurance: '',
+		nominee_name: '',
+		nominee_rel: '',
+		nominee_dob: '',
+		nominee_id_doc: ''
 	});
   
     useEffect(() => {
@@ -93,7 +102,12 @@ function AddEdit(props) {
 				previous_positions: '',
 				current_positions: '',
 				photo: '',
-				gov_id_doc: ''
+				gov_id_doc: '',
+				opt_insurance: '',
+				nominee_name: '',
+				nominee_rel: '',
+				nominee_dob: '',
+				nominee_id_doc: ''
 			} : {
 				full_name: member.full_name,
 				club: member.club,
@@ -110,7 +124,12 @@ function AddEdit(props) {
 				previous_positions: member.previous_positions,
 				current_positions: member.current_positions,
 				photo: member.photo,
-				gov_id_doc: member.gov_id_doc,
+				gov_id_doc: (member.gov_id === 'Aadhar Card' ? member.gov_id_doc : ''),
+				opt_insurance: member.opt_insurance,
+				nominee_name: member.nominee_name,
+				nominee_rel: member.nominee_rel,
+				nominee_dob: member.nominee_dob,
+				nominee_id_doc: member.nominee_id_doc,
 			});
 		}).catch((error) => {
 			router.push('/admin');
@@ -135,7 +154,12 @@ function AddEdit(props) {
 			previous_positions: state.previous_positions,
 			current_positions: state.current_positions,
 			photo: state.photo,
-			gov_id_doc: state.gov_id_doc
+			gov_id_doc: state.gov_id_doc,
+			opt_insurance: state.opt_insurance,
+			nominee_name: state.nominee_name,
+			nominee_rel: state.nominee_rel,
+			nominee_dob: state.nominee_dob,
+			nominee_id_doc: state.nominee_id_doc
 		},
 		validationSchema: MemberSchema,
 		onSubmit: (values) => {
@@ -157,6 +181,11 @@ function AddEdit(props) {
 				current_positions: values.current_positions,
 				photo: values.photo,
 				gov_id_doc: values.gov_id_doc,
+				opt_insurance: values.opt_insurance,
+				nominee_name: values.nominee_name,
+				nominee_rel: values.nominee_rel,
+				nominee_dob: values.nominee_dob,
+				nominee_id_doc: values.nominee_id_doc
 			};
 
 			const url = MEMBERS_API + '/member';
@@ -345,6 +374,105 @@ function AddEdit(props) {
 								</div>
 								<div class="mb-4 inline-block relative w-full">
 									<label class="block text-gray-700 text-sm font-bold mb-2">
+										Photo (must be square cropped | upload jpg/png file only)
+									</label>
+									<input onChange={handleChange} name="photo"
+										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+										type="file" placeholder="Member's Poster" />
+									{(formik.values.photo) ? <label class="underline text-gray-700 text-sm text-theme-blue"><a href={formik.values.photo} rel="noreferrer" target="_blank">Last Uploaded File</a></label> : null }
+									{formik.errors.photo && formik.touched.photo ? (
+										<div className="text-red-700">{formik.errors.photo}</div>
+									) : null}
+								</div>
+
+								<div class="mb-4 inline-block relative w-full">
+									<label class="block text-gray-700 text-sm font-bold mb-2">
+										Do you want to opt for Rotary Rotaract We Care Policy?
+									</label>
+									<select
+										className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+										name="opt_insurance"
+										value={formik.values.opt_insurance}
+										onChange={formik.handleChange}
+									>
+										<option value=''>Select Option</option>
+										<option value={'Yes'}>Yes</option>
+										<option value={'No'}>No</option>
+									</select>
+									{formik.errors.opt_insurance && formik.touched.opt_insurance ? (
+										<div className="text-red-700">{formik.errors.opt_insurance}</div>
+									) : null}
+								</div>
+
+								{(formik.values.opt_insurance === 'Yes') ?
+									<>
+										<div class="mb-4 inline-block relative w-full">
+											<label class="block text-gray-700 text-sm font-bold mb-2">
+												AADHAR Card Scan (upload jpg/png file only)
+											</label>
+											<input onChange={handleChange} name="gov_id_doc"
+												class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												type="file" placeholder="Scanned Govt. ID" />
+											{(formik.values.gov_id_doc) ? <label class="underline text-gray-700 text-sm text-theme-blue"><a href={formik.values.gov_id_doc} rel="noreferrer" target="_blank">Last Uploaded File</a></label> : null }
+											{formik.errors.gov_id_doc && formik.touched.gov_id_doc ? (
+												<div className="text-red-700">{formik.errors.gov_id_doc}</div>
+											) : null}
+										</div>
+										<div class="mb-4 inline-block relative w-full">
+											<label class="block text-gray-700 text-sm font-bold mb-2">
+												Nominee Full Name
+											</label>
+											<input onChange={formik.handleChange} value={formik.values.nominee_name} name="nominee_name"
+												class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												type="text" placeholder="Nominee Full Name" />
+											{formik.errors.nominee_name && formik.touched.nominee_name ? (
+												<div className="text-red-700">{formik.errors.nominee_name}</div>
+											) : null}
+										</div>
+										<div class="mb-4 inline-block relative w-full">
+											<label class="block text-gray-700 text-sm font-bold mb-2">
+												Relationship with Nominee
+											</label>
+											<input onChange={formik.handleChange} value={formik.values.nominee_rel} name="nominee_rel"
+												class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												type="text" placeholder="Relationship with Nominee" />
+											{formik.errors.nominee_rel && formik.touched.nominee_rel ? (
+												<div className="text-red-700">{formik.errors.nominee_rel}</div>
+											) : null}
+										</div>
+										<div class="mb-4 inline-block relative w-full">
+											<label class="block text-gray-700 text-sm font-bold mb-2">
+												Nominee's Date of Birth
+											</label>
+											<input onChange={formik.handleChange} value={formik.values.nominee_dob} name="nominee_dob"
+												class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												type="date" placeholder="Date of Birth" />
+											{formik.errors.nominee_dob && formik.touched.nominee_dob ? (
+												<div className="text-red-700">{formik.errors.nominee_dob}</div>
+											) : null}
+										</div>
+										<div class="mb-4 inline-block relative w-full">
+											<label class="block text-gray-700 text-sm font-bold mb-2">
+												Nominee AADHAR Card Scan (upload jpg/png file only)
+											</label>
+											<input onChange={handleChange} name="nominee_id_doc"
+												class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												type="file" placeholder="Scanned AADHAR Card of Nominee" />
+											{(formik.values.nominee_id_doc) ? <label class="underline text-gray-700 text-sm text-theme-blue"><a href={formik.values.nominee_id_doc} rel="noreferrer" target="_blank">Last Uploaded File</a></label> : null }
+											{formik.errors.nominee_id_doc && formik.touched.nominee_id_doc ? (
+												<div className="text-red-700">{formik.errors.nominee_id_doc}</div>
+											) : null}
+										</div>
+									</>
+									: null
+								}
+
+								<div class="inline-block relative w-full">
+									<button className="bg-theme-blue text-theme-white font-bold py-2 px-4 rounded" type="submit">Submit</button>
+								</div>
+
+								{/*<div class="mb-4 inline-block relative w-full">
+									<label class="block text-gray-700 text-sm font-bold mb-2">
 										Govt. ID Card
 									</label>
 									<select
@@ -386,22 +514,7 @@ function AddEdit(props) {
 									{formik.errors.gov_id_doc && formik.touched.gov_id_doc ? (
 										<div className="text-red-700">{formik.errors.gov_id_doc}</div>
 									) : null}
-								</div>
-								<div class="mb-4 inline-block relative w-full">
-									<label class="block text-gray-700 text-sm font-bold mb-2">
-										Photo (must be square cropped | upload jpg/png file only)
-									</label>
-									<input onChange={handleChange} name="photo"
-										class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-										type="file" placeholder="Member's Poster" />
-									{(formik.values.photo) ? <label class="underline text-gray-700 text-sm text-theme-blue"><a href={formik.values.photo} rel="noreferrer" target="_blank">Last Uploaded File</a></label> : null }
-									{formik.errors.photo && formik.touched.photo ? (
-										<div className="text-red-700">{formik.errors.photo}</div>
-									) : null}
-								</div>
-								<div class="inline-block relative w-full">
-									<button className="bg-theme-blue text-theme-white font-bold py-2 px-4 rounded" type="submit">Submit</button>
-								</div>
+								</div>*/}
 							</form>
 						</div>
 						<br />
