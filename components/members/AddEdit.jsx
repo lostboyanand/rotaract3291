@@ -28,18 +28,34 @@ const MemberSchema = Yup.object().shape({
 	ri_id: Yup.string().required('Required').min(6).max(11),
 	dob: Yup.date('Invalid date').required('Required'),
 	doi: Yup.date('Invalid date').required('Required'),
-	gov_id_number: Yup.string().required('Required'),
-	gov_id_doc: Yup.string().url('Enter a valid URL').required('Required'),
+	//gov_id_number: Yup.string().required('Required'),
 	blood_group: Yup.string().required('Required'),
 	occupation: Yup.string().required('Required'),
 	previous_positions: Yup.string().required('Required'),
 	current_positions: Yup.string().required('Required'),
 	photo: Yup.string().url('Enter a valid URL').required('Required'),
-	opt_insurance: Yup.string().required('Required'),
-	nominee_name: Yup.string().required('Required'),
-	nominee_rel: Yup.string().required('Required'),
-	nominee_dob: Yup.date('Invalid date').required('Required'),
-	nominee_id_doc: Yup.string().url('Enter a valid URL').required('Required'),
+	opt_insurance: Yup.boolean().required('Required'),
+	gov_id_doc: Yup.string().when("opt_insurance", {
+        is: true,
+        then: Yup.string().required('Required'),
+		else: Yup.string()
+	}),
+	nominee_name: Yup.string().when("opt_insurance", {
+        is: true,
+        then: Yup.string().required('Required')
+	}),
+	nominee_rel: Yup.string().when("opt_insurance", {
+        is: true,
+        then: Yup.string().required('Required')
+	}),
+	nominee_dob: Yup.string().when("opt_insurance", {
+        is: true,
+        then: Yup.string().required('Required')
+	}),
+	nominee_id_doc: Yup.string().when("opt_insurance", {
+        is: true,
+        then: Yup.string().required('Required')
+	}),
 });
 
 export { AddEdit };
@@ -163,6 +179,7 @@ function AddEdit(props) {
 		},
 		validationSchema: MemberSchema,
 		onSubmit: (values) => {
+			debugger;
 			console.log(values);
 			const member = {
 				full_name: values.full_name,
@@ -182,10 +199,10 @@ function AddEdit(props) {
 				photo: values.photo,
 				gov_id_doc: values.gov_id_doc,
 				opt_insurance: values.opt_insurance,
-				nominee_name: values.nominee_name,
-				nominee_rel: values.nominee_rel,
-				nominee_dob: values.nominee_dob,
-				nominee_id_doc: values.nominee_id_doc
+				nominee_name: values.nominee_name || '',
+				nominee_rel: values.nominee_rel || '',
+				nominee_dob: values.nominee_dob || '',
+				nominee_id_doc: values.nominee_id_doc || ''
 			};
 
 			const url = MEMBERS_API + '/member';
@@ -396,15 +413,15 @@ function AddEdit(props) {
 										onChange={formik.handleChange}
 									>
 										<option value=''>Select Option</option>
-										<option value={'Yes'}>Yes</option>
-										<option value={'No'}>No</option>
+										<option value={true}>Yes</option>
+										<option value={false}>No</option>
 									</select>
 									{formik.errors.opt_insurance && formik.touched.opt_insurance ? (
 										<div className="text-red-700">{formik.errors.opt_insurance}</div>
 									) : null}
 								</div>
 
-								{(formik.values.opt_insurance === 'Yes') ?
+								{(formik.values.opt_insurance === 'true') ?
 									<>
 										<div class="mb-4 inline-block relative w-full">
 											<label class="block text-gray-700 text-sm font-bold mb-2">

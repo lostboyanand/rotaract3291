@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { AccountContext } from './Account';
 
 export default function NavbarAdmin(props) {
-    debugger;
     const { logout } = useContext(AccountContext);
     return (
         <>
